@@ -9,16 +9,11 @@
 
     <div class="bg-white p-6 rounded shadow mb-6">
         <h3 class="text-lg font-bold mb-4">{{ $isEdit ? 'Edit Kategori' : 'Tambah Kategori Baru' }}</h3>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium">Nama Kategori</label>
                 <input type="text" wire:model="name" class="mt-1 w-full border-gray-300 rounded shadow-sm">
                 @error('name') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
-            </div>
-            <div>
-                <label class="block text-sm font-medium">Slug</label>
-                <input type="text" wire:model="slug" class="mt-1 w-full border-gray-300 rounded shadow-sm">
-                @error('slug') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
             </div>
         </div>
         <div class="mt-4">

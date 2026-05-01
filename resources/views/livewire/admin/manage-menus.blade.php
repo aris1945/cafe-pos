@@ -16,11 +16,6 @@
                 @error('name') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
             </div>
             <div>
-                <label>Slug</label>
-                <input type="text" wire:model="slug" class="mt-1 w-full border-gray-300 rounded shadow-sm">
-                @error('slug') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
-            </div>
-            <div>
                 <label>Kategori</label>
                 <select wire:model="category_id" class="mt-1 w-full border-gray-300 rounded shadow-sm">
                     <option value="">Pilih Kategori</option>
@@ -35,7 +30,17 @@
                 <input type="number" wire:model="price" class="mt-1 w-full border-gray-300 rounded shadow-sm">
                 @error('price') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
             </div>
-            <div class="col-span-2">
+            <div>
+                <label>Gambar Menu</label>
+                <input type="file" wire:model="newImage" class="mt-1 w-full border-gray-300 rounded shadow-sm">
+                @error('newImage') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                @if ($newImage)
+                    <img src="{{ $newImage->temporaryUrl() }}" class="mt-2 h-20 rounded shadow">
+                @elseif($isEdit && $existingImage)
+                    <img src="{{ $existingImage }}" class="mt-2 h-20 rounded shadow">
+                @endif
+            </div>
+            <div class="col-span-2 md:col-span-3">
                 <label>Deskripsi</label>
                 <input type="text" wire:model="description" class="mt-1 w-full border-gray-300 rounded shadow-sm">
             </div>
@@ -57,6 +62,7 @@
         <table class="w-full text-left border-collapse">
             <thead>
                 <tr class="bg-gray-100 text-gray-700">
+                    <th class="p-3 border-b w-16">Gambar</th>
                     <th class="p-3 border-b">Kategori</th>
                     <th class="p-3 border-b">Nama</th>
                     <th class="p-3 border-b">Harga</th>
@@ -67,6 +73,13 @@
             <tbody>
                 @foreach($menus as $menu)
                 <tr class="hover:bg-gray-50 border-b">
+                    <td class="p-3">
+                        @if($menu->image)
+                            <img src="{{ $menu->image }}" class="h-10 w-10 object-cover rounded shadow-sm">
+                        @else
+                            <div class="h-10 w-10 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs shadow-sm">No img</div>
+                        @endif
+                    </td>
                     <td class="p-3">{{ $menu->category->name ?? '-' }}</td>
                     <td class="p-3 font-semibold">{{ $menu->name }}</td>
                     <td class="p-3">Rp {{ number_format($menu->price, 0, ',', '.') }}</td>

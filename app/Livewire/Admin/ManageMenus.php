@@ -6,12 +6,14 @@ use App\Models\Menu;
 use App\Models\Category;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\WithFileUploads;
 
 class ManageMenus extends Component
 {
-    use WithPagination;
+    use WithPagination, WithFileUploads;
 
     public $name, $slug, $description, $price, $category_id, $is_active = true, $menuId;
+    public $newImage, $existingImage;
     public $isEdit = false;
 
     public function render()
@@ -24,12 +26,29 @@ class ManageMenus extends Component
     public function store()
     {
         $this->validate([
-            'name' => 'required', 'slug' => 'required|unique:menus,slug',
-            'price' => 'required|numeric', 'category_id' => 'required'
+            'name' => 'required',
+            'price' => 'required|numeric', 'category_id' => 'required',
+            'newImage' => 'nullable|image|max:2048'
         ]);
+
+        $imageUrl = null;
+        if ($this->newImage) {
+            $path = $this->newImage->store('menus', 'public');
+            $imageUrl = '/storage/' . $path;
+        }
+
+        $slug = \Illuminate\Support\Str::slug($this->name);
+        $originalSlug = $slug;
+        $counter = 1;
+        while(Menu::where('slug', $slug)->exists()) {
+            $slug = $originalSlug . '-' . $counter;
+            $counter++;
+        }
+
         Menu::create([
-            'name' => $this->name, 'slug' => $this->slug, 'description' => $this->description,
-            'price' => $this->price, 'category_id' => $this->category_id, 'is_active' => $this->is_active
+            'name' => $this->name, 'slug' => $slug, 'description' => $this->description,
+            'price' => $this->price, 'category_id' => $this->category_id, 'is_active' => $this->is_active,
+            'image' => $imageUrl
         ]);
         session()->flash('success', 'Menu berhasil ditambah.');
         $this->resetFields();
@@ -39,20 +58,41 @@ class ManageMenus extends Component
     {
         $m = Menu::findOrFail($id);
         $this->menuId = $m->id;
-        $this->name = $m->name; $this->slug = $m->slug; $this->description = $m->description;
+        $this->name = $m->name; $this->description = $m->description;
         $this->price = $m->price; $this->category_id = $m->category_id; $this->is_active = $m->is_active;
+        $this->existingImage = $m->image;
+        $this->newImage = null;
         $this->isEdit = true;
     }
 
     public function update()
     {
         $this->validate([
-            'name' => 'required', 'slug' => 'required|unique:menus,slug,'.$this->menuId,
-            'price' => 'required|numeric', 'category_id' => 'required'
+            'name' => 'required',
+            'price' => 'required|numeric', 'category_id' => 'required',
+            'newImage' => 'nullable|image|max:2048'
         ]);
-        Menu::find($this->menuId)->update([
-            'name' => $this->name, 'slug' => $this->slug, 'description' => $this->description,
-            'price' => $this->price, 'category_id' => $this->category_id, 'is_active' => $this->is_active
+
+        $m = Menu::find($this->menuId);
+        $imageUrl = $m->image;
+
+        if ($this->newImage) {
+            $path = $this->newImage->store('menus', 'public');
+            $imageUrl = '/storage/' . $path;
+        }
+
+        $slug = \Illuminate\Support\Str::slug($this->name);
+        $originalSlug = $slug;
+        $counter = 1;
+        while(Menu::where('slug', $slug)->where('id', '!=', $this->menuId)->exists()) {
+            $slug = $originalSlug . '-' . $counter;
+            $counter++;
+        }
+
+        $m->update([
+            'name' => $this->name, 'slug' => $slug, 'description' => $this->description,
+            'price' => $this->price, 'category_id' => $this->category_id, 'is_active' => $this->is_active,
+            'image' => $imageUrl
         ]);
         session()->flash('success', 'Menu diupdate.');
         $this->resetFields();
@@ -66,8 +106,9 @@ class ManageMenus extends Component
 
     private function resetFields()
     {
-        $this->name = ''; $this->slug = ''; $this->description = '';
+        $this->name = ''; $this->description = '';
         $this->price = ''; $this->category_id = ''; $this->is_active = true;
-        $this->menuId = null; $this->isEdit = false;
+        $this->menuId = null; $this->isEdit = false; 
+        $this->newImage = null; $this->existingImage = null;
     }
 }

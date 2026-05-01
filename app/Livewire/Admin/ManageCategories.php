@@ -8,7 +8,7 @@ use Livewire\Component;
 class ManageCategories extends Component
 {
     public $categories;
-    public $name, $slug, $categoryId;
+    public $name, $categoryId;
     public $isEdit = false;
 
     public function mount()
@@ -23,8 +23,17 @@ class ManageCategories extends Component
 
     public function store()
     {
-        $this->validate(['name' => 'required', 'slug' => 'required|unique:categories,slug']);
-        Category::create(['name' => $this->name, 'slug' => $this->slug]);
+        $this->validate(['name' => 'required']);
+
+        $slug = \Illuminate\Support\Str::slug($this->name);
+        $originalSlug = $slug;
+        $counter = 1;
+        while(Category::where('slug', $slug)->exists()) {
+            $slug = $originalSlug . '-' . $counter;
+            $counter++;
+        }
+
+        Category::create(['name' => $this->name, 'slug' => $slug]);
         session()->flash('success', 'Kategori ditambahkan.');
         $this->resetFields();
         $this->mount();
@@ -35,14 +44,22 @@ class ManageCategories extends Component
         $cat = Category::findOrFail($id);
         $this->categoryId = $cat->id;
         $this->name = $cat->name;
-        $this->slug = $cat->slug;
         $this->isEdit = true;
     }
 
     public function update()
     {
-        $this->validate(['name' => 'required', 'slug' => 'required|unique:categories,slug,'.$this->categoryId]);
-        Category::find($this->categoryId)->update(['name' => $this->name, 'slug' => $this->slug]);
+        $this->validate(['name' => 'required']);
+
+        $slug = \Illuminate\Support\Str::slug($this->name);
+        $originalSlug = $slug;
+        $counter = 1;
+        while(Category::where('slug', $slug)->where('id', '!=', $this->categoryId)->exists()) {
+            $slug = $originalSlug . '-' . $counter;
+            $counter++;
+        }
+
+        Category::find($this->categoryId)->update(['name' => $this->name, 'slug' => $slug]);
         session()->flash('success', 'Kategori diupdate.');
         $this->resetFields();
         $this->mount();
@@ -57,6 +74,6 @@ class ManageCategories extends Component
 
     private function resetFields()
     {
-        $this->name = ''; $this->slug = ''; $this->categoryId = null; $this->isEdit = false;
+        $this->name = ''; $this->categoryId = null; $this->isEdit = false;
     }
 }
