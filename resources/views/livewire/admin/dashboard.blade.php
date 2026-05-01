@@ -82,18 +82,18 @@
                 <p class="text-sm text-slate-500 mb-2">Persentase produk yang paling sukses dijual sepanjang waktu.</p>
             </div>
             
-            <div wire:ignore class="flex-1 flex items-center justify-center">
-                <div id="topMenuChart" class="w-full relative flex items-center justify-center"></div>
+            <div wire:ignore class="flex-1 w-full flex items-center justify-center min-h-[300px]">
+                <div id="topMenuChart" class="w-full"></div>
             </div>
         </div>
     </div>
 
     <!-- Load ApexCharts Script dynamically via Alpine data component -->
-    <div x-data="dashboardCharts" x-init="initCharts()"></div>
+    <div x-data="dashboardCharts()" x-init="initCharts()"></div>
     
     <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('dashboardCharts', () => ({
+        window.dashboardCharts = function() {
+            return {
                 initCharts() {
                     if (typeof window.ApexCharts === 'undefined') {
                         let script = document.createElement('script');
@@ -108,10 +108,10 @@
                 },
                 renderAllCharts() {
                     let chartDates = {!! json_encode($chartDates) !!};
-                    let chartRevenues = {{ json_encode($chartRevenues) }};
+                    let chartRevenues = {!! json_encode($chartRevenues) !!};
                     
                     let topMenuNames = {!! empty($topMenuNames) ? '["Belum Ada Data"]' : json_encode($topMenuNames) !!};
-                    let topMenuQtys = {{ empty($topMenuQtys) ? '[1]' : json_encode($topMenuQtys) }};
+                    let topMenuQtys = {!! empty($topMenuQtys) ? '[1]' : json_encode($topMenuQtys) !!};
                     let isTopMenuEmpty = {{ empty($topMenuQtys) ? 'true' : 'false' }};
 
                     var revenueOptions = {
@@ -210,7 +210,7 @@
                                 }
                             }
                         },
-                        stroke: { show: true, colors: '#fff', width: 4 },
+                        stroke: { show: true, colors: ['#ffffff'], width: 4 },
                         legend: { show: false },
                         tooltip: {
                             enabled: !isTopMenuEmpty,
@@ -227,7 +227,7 @@
                         }
                     }, 50);
                 }
-            }));
-        });
+            };
+        };
     </script>
 </div>

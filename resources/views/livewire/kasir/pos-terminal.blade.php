@@ -193,7 +193,7 @@
                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 pl-3">Uang Diterima</label>
                         <div class="relative pl-2">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 font-bold text-lg">Rp</div>
-                            <input type="number" wire:model.live.debounce.300ms="cashPaid" class="w-full pl-11 border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 font-black text-2xl py-3 px-3 shadow-inner bg-slate-50 text-slate-800 transition-all">
+                            <input type="number" wire:model.live.debounce.1000ms="cashPaid" class="w-full pl-11 border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 font-black text-2xl py-3 px-3 shadow-inner bg-slate-50 text-slate-800 transition-all">
                         </div>
                         
                         @if($cashPaid > 0)
@@ -252,8 +252,8 @@
                 window.snap.pay('{{ $snapToken }}', {
                     onSuccess: function(result){ alert('Pembayaran berhasil!'); $wire.resetCart(); },
                     onPending: function(result){ alert('Menunggu pembayaran Anda...'); $wire.resetCart(); },
-                    onError: function(result){ alert('Pembayaran gagal!'); $wire.set('showPaymentModal', false); },
-                    onClose: function(){ alert('Anda menutup transaksi.'); $wire.set('showPaymentModal', false); }
+                    onError: function(result){ alert('Pembayaran gagal!'); $wire.cancelPayment(); },
+                    onClose: function(){ alert('Anda menutup transaksi.'); $wire.cancelPayment(); }
                 });
             } else { alert('Gateway pembayaran tidak dimuat. Coba lagi.'); }
         "></div>

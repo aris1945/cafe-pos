@@ -23,6 +23,7 @@ class PosTerminal extends Component
     public float $cashPaid = 0;
     public bool $showPaymentModal = false;
     public ?string $snapToken = null;
+    public ?int $currentOrderId = null;
 
     public function addToCart(int $menuId): void
     {
@@ -93,6 +94,8 @@ class PosTerminal extends Component
             'total' => $this->total,
         ]);
 
+        $this->currentOrderId = $order->id;
+
         foreach ($this->cart as $item) {
             OrderItem::create([
                 'order_id' => $order->id,
@@ -117,12 +120,27 @@ class PosTerminal extends Component
         }
     }
 
+    public function cancelPayment()
+    {
+        if ($this->currentOrderId) {
+            $order = Order::find($this->currentOrderId);
+            if ($order && $order->status === 'pending') {
+                $order->update(['status' => 'cancelled']);
+            }
+        }
+        // Hanya reset state pembayaran, keranjang tetap dipertahankan
+        $this->showPaymentModal = false;
+        $this->snapToken = null;
+        $this->currentOrderId = null;
+    }
+
     public function resetCart()
     {
         $this->cart = [];
         $this->cashPaid = 0;
         $this->showPaymentModal = false;
         $this->snapToken = null;
+        $this->currentOrderId = null;
         $this->customerName = '';
         $this->notes = '';
     }

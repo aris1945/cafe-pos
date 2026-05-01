@@ -97,6 +97,8 @@ class PaymentService
 
         if ($status === 'success') {
             $order->update(['status' => 'paid']);
+        } elseif ($status === 'failed') {
+            $order->update(['status' => 'cancelled']);
         }
     }
 }
